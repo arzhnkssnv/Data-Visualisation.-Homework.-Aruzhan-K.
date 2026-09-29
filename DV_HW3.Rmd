@@ -1,0 +1,75 @@
+---
+title: "Homework 3."
+output: html_document
+---
+
+```{r houseprices-setup, include=FALSE}
+library(AER)
+library(knitr)
+
+data("HousePrices", package = "AER")
+hp_model <- lm(log(price) ~ bedrooms, data = HousePrices)
+```
+
+The standard deviation is $\sigma$ and the sample mean is $\bar{x}$.
+
+$$
+\hat{y}_i = \hat{\alpha} + \hat{\beta}x_i
+$$
+
+$$
+\bar{x} = \frac{1}{n}\sum_{i=1}^{n}x_i
+$$
+
+The model relates the log of sale price to the number of bedrooms:
+
+$$
+\log(\text{price}_i) = \alpha + \beta\,\text{bedrooms}_i + \varepsilon_i
+$$
+
+The fitted equation is:
+
+$$
+\widehat{\log(\text{price}_i)} =
+`r round(coef(hp_model)[1], 3)` +
+`r round(coef(hp_model)[2], 4)`\,\text{bedrooms}_i
+$$
+
+One additional bedroom is associated with an estimated `r round(100 * (exp(coef(hp_model)[2]) - 1), 1)`% change in sale price in this model.
+
+```{r descriptive-table}
+describe <- function(x) {
+  c(
+    N = length(x),
+    Mean = mean(x),
+    SD = sd(x),
+    Minimum = min(x),
+    Median = median(x),
+    Maximum = max(x)
+  )
+}
+
+desc <- rbind(
+  "Sale price (dollars)" = describe(HousePrices$price),
+  "Lot size (square feet)" = describe(HousePrices$lotsize)
+)
+
+knitr::kable(
+  desc,
+  caption = "Descriptive statistics for sale price and lot size.",
+  col.names = c("N", "Mean", "SD", "Minimum", "Median", "Maximum"),
+  digits = c(0, 2, 2, 2, 2, 2)
+)
+```
+
+```{r coefficient-table}
+coefs <- summary(hp_model)$coefficients
+rownames(coefs) <- c("Intercept", "Number of bedrooms")
+colnames(coefs) <- c("Estimate", "Std. error", "t statistic", "p-value")
+
+knitr::kable(
+  coefs,
+  caption = "Regression of log sale price on number of bedrooms.",
+  digits = 4
+)
+```
